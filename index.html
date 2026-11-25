@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nexus LLM Studio</title>
+<style>
+:root{--bg:#0b0d12;--panel:#10131a;--card:#141824;--line:#222838;--txt:#e8ebf3;--mut:#8a93a8;--acc:#6366f1;--acc2:#818cf8;--ok:#22c55e;--bad:#ef4444;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+[data-theme=light]{--bg:#f5f6fa;--panel:#fff;--card:#f0f2f8;--line:#dde1ec;--txt:#161a26;--mut:#667089;--acc2:#4f46e5}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+header{display:flex;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px}
+.logo i{width:36px;height:36px;border-radius:9px;background:var(--acc);display:grid;place-items:center;font-style:normal}
+.pill{font-size:11px;font-weight:600;color:var(--acc2);border:1px solid var(--acc);border-radius:5px;padding:2px 6px}
+.mid{flex:1;display:flex;justify-content:center;align-items:center;gap:14px;min-width:260px}
+.field{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:0 10px}
+.field label{font-size:12px;letter-spacing:.08em;color:var(--mut);font-weight:600}
+.field select{background:transparent;border:0;padding:9px 4px;min-width:200px;outline-offset:6px}
+.hbtn{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 14px}
+.hbtn:hover{border-color:var(--acc)}
+.live{color:var(--ok);border-color:#14532d;background:#0f2a1a;border-radius:20px;font-weight:600;font-size:13px;letter-spacing:.08em}
+.live.off{color:var(--mut);background:var(--card);border-color:var(--line)}
+.live b{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+#status{color:var(--mut);font-size:14px}
+main{flex:1;display:grid;grid-template-columns:300px 1fr 340px;min-height:0}
+aside{overflow:auto;padding:22px 20px;background:var(--panel)}
+#left{border-right:1px solid var(--line)}#right{border-left:1px solid var(--line)}
+h2{margin:0 0 2px;font-size:19px}h3{font-size:12px;letter-spacing:.1em;margin:22px 0 8px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+h3 small{color:var(--mut);font-weight:400;letter-spacing:0;font-size:12px}
+.sub{color:var(--mut);font-size:13px;margin:0}
+.in{width:100%;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:11px 12px}
+.row{display:flex;gap:10px;align-items:center}
+.tag{font-size:11px;background:var(--card);border:1px solid var(--line);border-radius:5px;padding:2px 8px;color:var(--mut)}
+.tag.ok{color:var(--ok);border-color:#14532d}
+.hint{color:var(--mut);font-size:12.5px;margin:6px 0}
+.red{color:var(--bad);background:none;border:0;font-size:13px}
+.eye{background:none;border:0;margin-left:-38px;width:34px}
+input[type=range]{flex:1;accent-color:var(--acc2)}
+.num{width:76px;text-align:center;font-family:var(--mono)}
+textarea.in{resize:vertical;min-height:80px;font-family:inherit}
+#center{display:flex;flex-direction:column;min-width:0;min-height:0}
+.bar{display:flex;gap:18px;align-items:center;padding:12px 28px;border-bottom:1px solid var(--line);color:var(--mut);font-size:14px}
+.bar b{color:var(--txt)}.bar .sp{flex:1}
+.bar button{background:none;border:0;color:var(--mut)}.bar button:hover{color:var(--txt)}
+#chat{flex:1;overflow:auto;padding:24px 28px}
+.hero{text-align:center;max-width:760px;margin:30px auto 0}
+.hero .bolt{font-size:44px}.hero h1{margin:10px 0 8px;font-size:28px}.hero p{color:var(--mut);margin:0 0 30px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:left}
+.ex{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;text-align:left;display:block;width:100%}
+.ex:hover{border-color:var(--acc)}
+.ex span{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--acc2);background:#6366f122;padding:3px 8px;border-radius:5px;margin-bottom:10px}
+.ex b{display:block;font-size:17px;margin-bottom:4px}.ex small{color:var(--mut);font-size:14px}
+.msg{max-width:820px;margin:0 auto 18px;display:flex;flex-direction:column;gap:4px}
+.msg .who{font-size:12px;color:var(--mut);font-weight:600;letter-spacing:.06em}
+.msg .body{white-space:pre-wrap;word-wrap:anywhere;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.msg.user .body{background:#6366f118;border-color:#6366f155}
+.msg.err .body{border-color:var(--bad);color:var(--bad)}
+.msg pre{background:var(--bg);padding:10px;border-radius:8px;overflow:auto;font:13px var(--mono);margin:8px 0}
+.cursor::after{content:"▍";animation:bl 1s steps(2) infinite;color:var(--acc2)}
+@keyframes bl{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.cursor::after{animation:none}}
+#composer{border-top:1px solid var(--line);padding:14px 28px 18px;background:var(--panel)}
+.meta{display:flex;gap:10px;align-items:center;margin-bottom:8px;font-size:13px;color:var(--mut)}
+.meta .tag{font-family:var(--mono)}.meta .sp{flex:1}
+.meta button{background:none;border:0;color:var(--mut);font-size:16px}
+#prompt{width:100%;height:130px;font-family:var(--mono);font-size:14px;resize:vertical}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;color:var(--mut)}
+kbd{border:1px solid var(--line);border-radius:4px;padding:1px 6px;font:11px var(--mono);background:var(--card)}
+#send{background:var(--acc);border:0;color:#fff;font-weight:600;padding:12px 22px;border-radius:10px}
+#send:hover{background:#7679f5}#send.stop{background:var(--bad)}
+.tabs{display:flex;border-bottom:1px solid var(--line);margin:-8px -4px 18px}
+.tabs button{flex:1;background:none;border:0;border-bottom:2px solid transparent;color:var(--mut);padding:10px;font-weight:600}
+.tabs button.on{color:var(--acc2);border-color:var(--acc2)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.cls{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.cls h4{margin:0;font-size:13px;letter-spacing:.12em;font-weight:700}
+.badge{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--acc2);border:1px solid var(--acc);background:#6366f122;border-radius:6px;padding:8px 12px;text-align:center}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stats div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-align:center;font-size:11px;color:var(--mut);letter-spacing:.06em}
+.stats b{display:block;font:700 17px var(--mono);color:var(--txt);margin-top:3px;letter-spacing:0}
+.tech{display:flex;flex-wrap:wrap;gap:6px}
+.heu{list-style:none;margin:0;padding:0;font-size:13.5px}
+.heu li{padding:9px 0;border-bottom:1px dashed var(--line);color:var(--mut)}
+.heu li.y{color:var(--txt)}.heu li.y::before{content:"✓ "}.heu li:not(.y)::before{content:"✕ "}
+.heu code{font:12px var(--mono);color:var(--acc2)}
+pre.insp{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;font:12px var(--mono);overflow:auto;max-height:260px;white-space:pre-wrap;margin:0}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line);font-size:14px}.kv b{font-family:var(--mono)}
+dialog{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:14px;max-width:640px;width:92%;padding:20px}
+dialog::backdrop{background:#000a}
+dialog pre{background:var(--bg);padding:12px;border-radius:8px;overflow:auto;font:12.5px var(--mono);max-height:50vh}
+.plist button{display:block;width:100%;text-align:left;margin-bottom:8px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.plist button:hover{border-color:var(--acc)}
+@media(max-width:1100px){body{overflow:auto}main{grid-template-columns:1fr;display:block}aside,#left,#right{border:0;border-bottom:1px solid var(--line)}#chat{min-height:50vh}.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><i>⚡</i>Nexus LLM Studio <span class="pill">PRO v2.4</span></div>
+  <div class="mid">
+    <div class="field"><label for="model">MODEL</label><select id="model"></select></div>
+    <span id="status">Ready</span>
+  </div>
+  <button class="hbtn" id="presets">▢ Presets</button>
+  <button class="hbtn" id="export">‹› Export Code</button>
+  <button class="hbtn" id="theme" aria-label="Toggle theme">🌙</button>
+  <span class="hbtn live" id="live"><b></b> LIVE STREAM</span>
+</header>
+
+<main>
+<aside id="left">
+  <h2>Parameters &amp; Setup</h2><p class="sub">Model hyperparameters &amp; credentials</p>
+  <h3>API PROVIDER</h3>
+  <select class="in" id="provider">
+    <option value="groq">Groq (Ultra-low latency LPU)</option>
+    <option value="openai">OpenAI</option>
+    <option value="openrouter">OpenRouter</option>
+  </select>
+  <h3>API KEY <span class="tag" id="keytag">No Key</span></h3>
+  <div class="row"><input class="in" id="key" type="password" placeholder="gsk_..." autocomplete="off"><button class="eye" id="eye" aria-label="Show key">👁</button></div>
+  <div class="row" style="justify-content:space-between;margin-top:10px"><label class="row" style="gap:8px"><input type="checkbox" id="remember"> Remember in this session</label><button class="red" id="clearkey">Clear</button></div>
+  <p class="hint">Key is stored strictly in browser memory and sent directly to the selected API.</p>
+
+  <h3 style="margin-top:34px">SYSTEM INSTRUCTIONS <select id="persona" class="tag"><option value="">Choose Persona...</option><option>You are an analytical classifier. Output strictly the label.</option><option>You are a senior software engineer. Give concise, correct code with brief explanations.</option><option>You are a friendly tutor. Explain step by step in simple language.</option><option>You are a JSON API. Respond only with valid JSON, no prose.</option></select></h3>
+  <textarea class="in" id="system">You are an analytical classifier. Output strictly the label.</textarea>
+
+  <h3 style="margin-top:34px">TEMPERATURE <small id="tdesc">Deterministic</small></h3>
+  <div class="row"><input type="range" id="temp" min="0" max="2" step="0.1" value="0.2"><input class="in num" id="tempn" value="0.2"></div>
+  <p class="hint">Lower values (0.2) = deterministic &amp; focused. Higher values (0.8+) = creative &amp; varied.</p>
+  <h3>MAX COMPLETION TOKENS <small id="mtl">150 tok</small></h3>
+  <div class="row"><input type="range" id="max" min="16" max="4096" step="1" value="150"><input class="in num" id="maxn" value="150"></div>
+  <p class="hint">On reasoning models, this budget includes thinking tokens. Raise if answers truncate.</p>
+  <h3>TOP P (NUCLEUS SAMPLING)</h3>
+  <div class="row"><input type="range" id="topp" min="0" max="1" step="0.05" value="1"><input class="in num" id="toppn" value="1.0"></div>
+</aside>
+
+<section id="center">
+  <div class="bar"><span><b id="turns">0</b> turns</span><span><b id="stok">0</b> total session tokens</span><span class="sp"></span><button id="exmd">⭳ Export .md</button><button id="clear">🗑 Clear</button></div>
+  <div id="chat">
+    <div class="hero" id="hero"><div class="bolt">⚡</div><h1>Prompt Intelligence Playground</h1><p>Experiment with temperature, zero/few-shot prompts, web grounding, and real-time reasoning models.</p>
+      <div class="cards">
+        <button class="ex" data-ex="fewshot"><span>FEW-SHOT</span><b>Sentiment Classifier</b><small>Test in-context learning with structured Input / Output pairs.</small></button>
+        <button class="ex" data-ex="cot"><span>CHAIN OF THOUGHT</span><b>Multi-Step Math Logic</b><small>Evaluate step-by-step thinking and deduction reasoning.</small></button>
+        <button class="ex" data-ex="json"><span>STRUCTURED JSON</span><b>Entity Extractor</b><small>Enforce strict JSON schema parsing from unstructured text.</small></button>
+        <button class="ex" data-ex="constraints"><span>CONSTRAINTS</span><b>Python Algorithm Audit</b><small>Code review with negative constraints and performance limits.</small></button>
+      </div></div>
+  </div>
+  <div id="composer">
+    <div class="meta"><span class="tag" id="tk">~0 tokens</span><span id="chars">0 chars</span><span class="sp"></span><button id="mic" aria-label="Voice input">🎤</button><button id="xp" aria-label="Clear prompt">✕</button></div>
+    <textarea class="in" id="prompt" placeholder="Type a prompt or pick an example above…"></textarea>
+    <div class="foot"><span><kbd>⌘</kbd> / <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to submit · <kbd>Esc</kbd> to cancel</span><button id="send">➤ Submit Request</button></div>
+  </div>
+</section>
+
+<aside id="right">
+  <div class="tabs" role="tablist"><button class="on" data-t="a">Analysis</button><button data-t="t">Telemetry</button><button data-t="q">Quotas</button></div>
+  <div id="tab-a">
+    <div class="box"><div class="cls"><h4>PROMPT CLASSIFICATION</h4><div class="badge" id="cls">ZERO-SHOT</div></div>
+      <p class="sub" style="margin-top:12px">Analyzing prompt box in real-time…</p>
+      <div class="stats"><div>EST. TOKENS<b id="s1">0</b></div><div>EXAMPLES<b id="s2">0</b></div><div>EST. COST<b id="s3">&lt;$0.0001</b></div></div>
+      <h3 style="margin-top:22px">DETECTED TECHNIQUES</h3><div class="tech" id="techs"><i class="sub">None detected yet</i></div>
+      <h3>PROMPT ENGINEERING HEURISTICS</h3><ul class="heu" id="heu"></ul></div>
+    <div class="box"><h3 style="margin-top:0">PROMPT INSPECTOR</h3><pre class="insp" id="insp">Payload preview appears here.</pre></div>
+  </div>
+  <div id="tab-t" hidden><div class="box" id="tele"></div></div>
+  <div id="tab-q" hidden><div class="box" id="quota"><p class="sub">Rate-limit headers appear here after your first request (when the provider exposes them).</p></div></div>
+</aside>
+</main>
+
+<dialog id="dlg"><div id="dlgbody"></div><div style="text-align:right;margin-top:12px"><button class="hbtn" style="display:inline-flex" id="dclose">Close</button></div></dialog>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const P={groq:{url:'https://api.groq.com/openai/v1/chat/completions',ph:'gsk_...',price:.59,models:['llama-3.3-70b-versatile','llama-3.1-8b-instant','openai/gpt-oss-120b','openai/gpt-oss-20b','qwen/qwen3-32b']},
+openai:{url:'https://api.openai.com/v1/chat/completions',ph:'sk-...',price:.6,models:['gpt-4o-mini','gpt-4o','gpt-4.1-mini']},
+openrouter:{url:'https://openrouter.ai/api/v1/chat/completions',ph:'sk-or-...',price:.5,models:['meta-llama/llama-3.3-70b-instruct','google/gemini-2.0-flash-001','mistralai/mistral-small-3.1-24b-instruct']}};
+const EX={
+fewshot:{s:'You are an analytical classifier. Output strictly the label.',p:'Classify the sentiment of each product review as positive, negative, or neutral.\n\nInput: The battery lasts over two days easily, completely exceeded my expectations.\nOutput: positive\n\nInput: Arrived broken and the customer support never replied to my emails.\nOutput: negative\n\nInput: It works as described, nothing special.\nOutput: neutral\n\nInput: The screen is gorgeous but the speakers crackle at high volume.\nOutput:',t:.2},
+cot:{s:'You are a careful math tutor.',p:'A train leaves city A at 60 km/h. Two hours later a second train leaves the same station at 90 km/h on the same track. How long after the second train departs does it catch up?\n\nLet\'s think step by step.',t:.3},
+json:{s:'You are a JSON API. Respond only with valid JSON, no prose.',p:'Extract entities from the text and return JSON with keys "people", "organizations", "locations", "dates".\n\nText: """On 12 March 2025, Sundar Pichai met Satya Nadella in Seattle to discuss a partnership between Google and Microsoft."""',t:0},
+constraints:{s:'You are a senior Python reviewer.',p:'Review this function. Do not rewrite it from scratch. Do not use external libraries. Keep the answer under 120 words and format it as a bullet list.\n\n```python\ndef dup(a):\n    r=[]\n    for i in a:\n        if i in r: continue\n        r.append(i)\n    return r\n```',t:.2}};
+const PRESETS=[['Sentiment (few-shot)','fewshot'],['Math (CoT)','cot'],['Entity extractor (JSON)','json'],['Code audit (constraints)','constraints']];
+let hist=[],ctrl=null,tokTotal=0,lastTele=null,lastHdr=null;
+const store=()=>sessionStorage;
+
+/* ---------- setup ---------- */
+function fillModels(){const p=P[$('#provider').value];$('#model').innerHTML=p.models.map(m=>`<option>${m}</option>`).join('');$('#key').placeholder=p.ph;}
+fillModels();
+$('#provider').onchange=()=>{fillModels();loadKey();inspect()};
+function loadKey(){const v=store().getItem('nx_key_'+$('#provider').value)||'';$('#key').value=v;$('#remember').checked=!!v;keyTag()}
+function keyTag(){const t=$('#keytag'),has=$('#key').value.trim();t.textContent=has?'Key set':'No Key';t.className='tag'+(has?' ok':'')}
+$('#key').oninput=()=>{keyTag();if($('#remember').checked)store().setItem('nx_key_'+$('#provider').value,$('#key').value)};
+$('#remember').onchange=()=>{const k='nx_key_'+$('#provider').value;$('#remember').checked?store().setItem(k,$('#key').value):store().removeItem(k)};
+$('#clearkey').onclick=()=>{$('#key').value='';store().removeItem('nx_key_'+$('#provider').value);$('#remember').checked=false;keyTag()};
+$('#eye').onclick=()=>{const k=$('#key');k.type=k.type=='password'?'text':'password'};
+loadKey();
+$('#persona').onchange=e=>{if(e.target.value)$('#system').value=e.target.value;e.target.selectedIndex=0;inspect()};
+$('#theme').onclick=()=>{const d=document.documentElement,l=d.dataset.theme=='dark';d.dataset.theme=l?'light':'dark';$('#theme').textContent=l?'☀️':'🌙'};
+
+/* sliders */
+function link(r,n,fmt=v=>v,after){const f=v=>{r.value=v;n.value=fmt(v);after&&after(+v);inspect()};r.oninput=()=>f(r.value);n.onchange=()=>f(Math.min(+r.max,Math.max(+r.min,+n.value||0)))}
+link($('#temp'),$('#tempn'),v=>(+v).toFixed(1),v=>$('#tdesc').textContent=v<=.3?'Deterministic':v<=.7?'Balanced':v<=1.2?'Creative':'Wild');
+link($('#max'),$('#maxn'),v=>v,v=>$('#mtl').textContent=v+' tok');
+link($('#topp'),$('#toppn'),v=>(+v).toFixed(1));
+$('#system').oninput=inspect;$('#model').onchange=inspect;
+
+/* ---------- prompt analysis ---------- */
+const tokens=t=>Math.ceil(t.length/3.8);
+const H=[
+['Input: / Output: pairs',t=>[...t.matchAll(/^\s*Input:.*\n\s*Output:\s*\S+/gim)],'pairs'],
+['Q: / A: pairs',t=>[...t.matchAll(/^\s*Q:.*\n\s*A:\s*\S+/gim)]],
+['"Input:" / "Output:"',t=>({n:Math.min((t.match(/^\s*Input:/gim)||[]).length,(t.match(/^\s*Output:/gim)||[]).length)})],
+['Arrow pairs (-> or =>)',t=>[...t.matchAll(/\S.*\s*(->|=>)\s*\S+/g)]],
+['Separated block exemplars (### or ---)',t=>/^(###|---)/m.test(t)?[1]:[]],
+['Chain-of-Thought',t=>/step[- ]by[- ]step|think (it )?through|reason (carefully|step)/i.test(t)?[1]:[]],
+['Role Prompting',t=>/\b(you are|act as|pretend to be|as an? (expert|senior))\b/i.test(t)?[1]:[]],
+['Negative Constraint',t=>/\b(do not|don't|never|avoid|without)\b/i.test(t)?[1]:[]],
+['Format Constraint',t=>/\b(json|bullet|markdown|table|under \d+ words|format (it|the answer)|in \d+ (words|sentences))\b/i.test(t)?[1]:[]],
+['Delimiters & Quotes',t=>/("""|```|<\w+>|'''|---)/.test(t)?[1]:[]]];
+function analyze(){
+  const t=$('#prompt').value,sys=$('#system').value,all=sys+'\n'+t;
+  const tk=tokens(t);$('#tk').textContent='~'+tk+' tokens';$('#chars').textContent=t.length+' chars';
+  let ex=0;const m=[...t.matchAll(/^\s*Input:.*\n\s*Output:\s*\S+/gim)].length;const qa=[...t.matchAll(/^\s*Q:.*\n\s*A:\s*\S+/gim)].length;const ar=[...t.matchAll(/\S.*\s(->|=>)\s*\S+/g)].length;ex=Math.max(m,qa,ar);
+  const cls=!t.trim()?'ZERO-SHOT':ex>=1?'FEW-SHOT ('+ex+')':/step[- ]by[- ]step/i.test(t)?'CHAIN OF THOUGHT':'ZERO-SHOT';
+  $('#cls').textContent=cls;$('#s1').textContent=tk;$('#s2').textContent=ex;
+  const c=(tk+$('#max').value*1)/1e6*P[$('#provider').value].price;$('#s3').textContent=c<.0001?'<$0.0001':'$'+c.toFixed(4);
+  const names=[],items=[];
+  H.forEach(([n,fn])=>{const src=n.includes('Role')||n.includes('Negative')?all:t;const r=fn(src);const hit=r.n!==undefined?r.n>0:r.length>0;
+    let det='';if(hit&&n.includes('pairs')&&Array.isArray(r))det=` ${r.length} — <code>${esc(r.slice(0,2).map(x=>(x[0].match(/Output:\s*\S+/i)||[''])[0]).join('</code>, <code>'))}</code>`;
+    if(hit&&r.n)det=` ${r.n}`;
+    items.push(`<li class="${hit?'y':''}">${n}${hit?(det?':'+det:''):': '+(n.match(/pairs|Arrow|Separated|"Input/)?'none found':'not detected')}</li>`);
+    if(hit&&!n.match(/pairs|Arrow|Separated|"Input/))names.push(n)});
+  if(ex)names.unshift('Few-Shot');
+  $('#techs').innerHTML=names.length?names.map(n=>`<span class="tag ok">${n}</span>`).join(''):'<i class="sub">None detected yet</i>';
+  $('#heu').innerHTML=items.join('');
+  inspect();
+}
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function payload(){const msgs=[];const s=$('#system').value.trim();if(s)msgs.push({role:'system',content:s});hist.forEach(m=>msgs.push(m));return{model:$('#model').value,messages:msgs,temperature:+$('#temp').value,max_tokens:+$('#max').value,top_p:+$('#topp').value,stream:true}}
+function inspect(){const p=payload();const t=$('#prompt').value.trim();if(t)p.messages.push({role:'user',content:t});$('#insp').textContent=JSON.stringify(p,null,2)}
+$('#prompt').oninput=analyze;analyze();
+
+/* examples / presets */
+function loadEx(k){const e=EX[k];$('#system').value=e.s;$('#prompt').value=e.p;$('#temp').value=e.t;$('#tempn').value=e.t.toFixed(1);$('#tdesc').textContent=e.t<=.3?'Deterministic':'Balanced';analyze();$('#prompt').focus()}
+$$('.ex').forEach(b=>b.onclick=()=>loadEx(b.dataset.ex));
+function dlg(html){$('#dlgbody').innerHTML=html;$('#dlg').showModal()}
+$('#dclose').onclick=()=>$('#dlg').close();
+$('#presets').onclick=()=>{dlg('<h2>Presets</h2><div class="plist">'+PRESETS.map(([n,k])=>`<button data-k="${k}">${n}</button>`).join('')+'</div>');$$('.plist button').forEach(b=>b.onclick=()=>{loadEx(b.dataset.k);$('#dlg').close()})};
+$('#export').onclick=()=>{const p=payload();const prov=P[$('#provider').value];const body=JSON.stringify({...p,messages:[...p.messages,...($('#prompt').value.trim()?[{role:'user',content:$('#prompt').value}]:[])]},null,2);
+  dlg(`<h2>Export Code</h2><p class="sub">cURL (replace YOUR_API_KEY)</p><pre>${esc(`curl ${prov.url} \\\n  -H "Authorization: Bearer YOUR_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '${body.replace(/'/g,"'\\''")}'`)}</pre><p class="sub">JavaScript</p><pre>${esc(`const res = await fetch("${prov.url}", {\n  method: "POST",\n  headers: { "Authorization": "Bearer YOUR_API_KEY", "Content-Type": "application/json" },\n  body: JSON.stringify(${body})\n});\nconsole.log(await res.json());`)}</pre>`)};
+
+/* tabs */
+$$('.tabs button').forEach(b=>b.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.toggle('on',x==b));['a','t','q'].forEach(k=>$('#tab-'+k).hidden=k!=b.dataset.t)});
+
+/* ---------- chat ---------- */
+function addMsg(role,text,cls=''){$('#hero')?.remove();const d=document.createElement('div');d.className='msg '+role+' '+cls;d.innerHTML=`<div class="who">${role=='user'?'YOU':role=='err'?'ERROR':'ASSISTANT'}</div><div class="body"></div>`;d.lastChild.textContent=text;$('#chat').appendChild(d);$('#chat').scrollTop=1e9;return d.lastChild}
+function render(el,t){el.innerHTML=esc(t).replace(/```(\w*)\n?([\s\S]*?)(```|$)/g,'<pre>$2</pre>')}
+function setBusy(b){const s=$('#send');s.classList.toggle('stop',b);s.textContent=b?'■ Stop':'➤ Submit Request';$('#live').classList.toggle('off',!b);$('#status').textContent=b?'Connecting…':'Ready'}
+async function submit(){
+  if(ctrl){ctrl.abort();return}
+  const text=$('#prompt').value.trim();if(!text)return;
+  const key=$('#key').value.trim();if(!key){addMsg('err','Add your API key in the left panel first. It is sent only to the selected provider.','err');return}
+  hist.push({role:'user',content:text});addMsg('user',text);$('#prompt').value='';analyze();
+  const body=payload(),out=addMsg('assistant','');out.classList.add('cursor');
+  ctrl=new AbortController();setBusy(true);
+  const t0=performance.now();let ttft=null,full='',usage=null;
+  try{
+    const r=await fetch(P[$('#provider').value].url,{method:'POST',signal:ctrl.signal,headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({...body,stream_options:$('#provider').value=='groq'?undefined:{include_usage:true}})});
+    lastHdr=[...r.headers.entries()].filter(([k])=>/ratelimit|retry-after/i.test(k));
+    if(!r.ok){let m=await r.text();try{m=JSON.parse(m).error.message}catch{}throw new Error(r.status+' — '+m)}
+    $('#status').textContent='Streaming…';
+    const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
+    while(true){const{done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop();
+      for(const l of lines){if(!l.startsWith('data:'))continue;const d=l.slice(5).trim();if(d=='[DONE]')continue;
+        try{const j=JSON.parse(d);const c=j.choices?.[0]?.delta?.content;if(c){if(ttft==null)ttft=performance.now()-t0;full+=c;render(out,full);$('#chat').scrollTop=1e9}
+        usage=j.usage||j.x_groq?.usage||usage}catch{}}}
+    hist.push({role:'assistant',content:full});
+  }catch(e){hist.pop();if(e.name=='AbortError'){hist.push({role:'assistant',content:full});out.parentElement.classList.add('err');full+=full?'\n\n[cancelled]':'[cancelled]';out.textContent=full}else{out.parentElement.remove();addMsg('err',e.message,'err')}}
+  out.classList.remove('cursor');
+  const dt=(performance.now()-t0)/1000,inT=usage?.prompt_tokens??body.messages.reduce((a,m)=>a+tokens(m.content),0),outT=usage?.completion_tokens??tokens(full);
+  tokTotal+=inT+outT;lastTele={model:body.model,latency:dt.toFixed(2)+' s',ttft:ttft?Math.round(ttft)+' ms':'—',tps:full?(outT/dt).toFixed(1)+' tok/s':'—',inT,outT,usedEst:!usage};
+  $('#turns').textContent=Math.floor(hist.length/2);$('#stok').textContent=tokTotal;
+  ctrl=null;setBusy(false);teleQuota();
+}
+function teleQuota(){
+  if(lastTele){const t=lastTele;$('#tele').innerHTML=[['Model',t.model],['Total latency',t.latency],['Time to first token',t.ttft],['Throughput',t.tps],['Prompt tokens',t.inT],['Completion tokens',t.outT]].map(([k,v])=>`<div class="kv"><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')+(t.usedEst?'<p class="hint">Token counts are estimated (provider sent no usage data).</p>':'')}
+  if(lastHdr)$('#quota').innerHTML=lastHdr.length?lastHdr.map(([k,v])=>`<div class="kv"><span>${esc(k.replace('x-ratelimit-',''))}</span><b>${esc(v)}</b></div>`).join(''):'<p class="sub">This provider did not expose rate-limit headers to the browser.</p>'}
+$('#send').onclick=submit;
+$('#prompt').addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key=='Enter'){e.preventDefault();submit()}});
+document.addEventListener('keydown',e=>{if(e.key=='Escape'&&ctrl)ctrl.abort()});
+$('#xp').onclick=()=>{$('#prompt').value='';analyze()};
+$('#clear').onclick=()=>{if(ctrl)ctrl.abort();hist=[];tokTotal=0;$('#turns').textContent=0;$('#stok').textContent=0;
+  $('#chat').innerHTML=`<div class="hero" id="hero">${document.querySelector('.hero')?.innerHTML||''}</div>`;location.reload()};
+$('#exmd').onclick=()=>{if(!hist.length)return;const md='# Nexus LLM Studio session\n\n'+hist.map(m=>`## ${m.role}\n\n${m.content}\n`).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));a.download='session.md';a.click()};
+
+/* voice input */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR)$('#mic').hidden=true;else{let rec,on=false;$('#mic').onclick=()=>{if(on){rec.stop();return}rec=new SR();rec.interimResults=false;rec.onresult=e=>{$('#prompt').value+=(e.results[0][0].transcript+' ');analyze()};rec.onend=()=>{on=false;$('#mic').textContent='🎤'};rec.start();on=true;$('#mic').textContent='🔴'}}
+setBusy(false);
+</script>
+</body>
+</html>
